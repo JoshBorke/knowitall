@@ -1,0 +1,9 @@
+## Interface: 20003
+## Title: TreeSync
+## Version: 1.0
+## Notes: A mod to synchronize a tree a data
+## LoadOnDemand: 0
+## Author: JoshBorke
+## X-WoWIPortal: JoshBorke
+
+TreeSync.lua

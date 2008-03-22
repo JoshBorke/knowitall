@@ -1,0 +1,3 @@
+[submodule "treesync"]
+	path = treesync
+	url = git@github.com:JoshBorke/treesync.git
