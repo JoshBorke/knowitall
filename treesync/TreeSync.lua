@@ -60,17 +60,34 @@ local next, pairs, type, tostring = next, pairs, type, tostring
 local abs, GetTime = math.abs, GetTime
 local tremove, tinsert = table.remove, table.insert
 local thisPlayer = UnitName('player')
-local nodeCompareTables, nodeSendTables = {}, {}
-local synched = {}
-local timeOffsets = {}
-local targetCommands = {}
-local responseQue, requestQue, announceQue = {}, {}, {}
-local pathToNode = {}
-local registeredPrefix = {}
+
+local nodeCompareTables = treeSync.nodeCompareTables or {}
+local nodeSendTables = treeSync.nodeSendTables or {}
+local synched = treeSync.synched or {}
+local timeOffsets = treeSync.timeOffsets or {}
+local targetCommands = treeSync.targetCommands or {}
+local responseQue = treeSync.responseQue or {}
+local requestQue = treeSync.requestQue or {}
+local announceQue = treeSync.announceQue or {}
+local pathToNode = treeSync.pathToNode or {}
+local registeredPrefix = treeSync.registeredPrefix or {}
+local logFile = treeSync.logFile or {}
+
+local treeSync.nodeCompareTables = nodeCompareTables
+local treeSync.nodeSendTables = nodeSendTables
+local treeSync.synched = synched
+local treeSync.timeOffsets = timeOffsets
+local treeSync.targetCommands = targetCommands
+local treeSync.responseQue = responseQue
+local treeSync.requestQue = requestQue
+local treeSync.announceQue = announceQue
+local treeSync.pathToNode = pathToNode
+local treeSync.registeredPrefix = registeredPrefix
+local treeSync.logFile = logFile
+
 local rootNode
 
 local debug = true
-local logFile = {}
 
 local function log(msg, ...)
 	local msg = format(msg, ...)
@@ -130,6 +147,7 @@ local function generateComparisonTable(treeNode)
 	t.treeModTime = treeNode.treeModTime
 	t.nodeModTime = treeNode.nodeModTime
 	t.path = treeNode.path
+	t.name = treeNode.name
 	local b = t.branches
 	for branch, info in pairs(treeNode.branches) do
 		b[branch] = format("%d:%d",info.treeModTime, info.nodeModTime)
@@ -152,6 +170,7 @@ local function generateSendTable(treeNode)
 	nodeSendTables[t] = nil
 	t.data = cpyTbl(treeNode.data)
 	t.path = treeNode.path
+	t.name = treeNode.name
 	t.treeModTime = treeNode.treeModTime
 	t.nodeModTime = treeNode.nodeModTime
 	return t
@@ -159,6 +178,7 @@ end
 
 local function returnSendTable(t)
 	t.path = nil
+	t.name = nil
 	nodeSendTables[t] = true
 end
 
@@ -182,10 +202,9 @@ end
 
 local function updatePaths(treeNode, path)
 	pathToNode[path] = treeNode
-	if (treeNode.branches) then
-		for branch, info in pairs(treeNode.branches) do
-			updatePaths(info, format("%s%s%s",path,sep,branch))
-		end
+	treeNode.path = path
+	for branch, info in pairs(treeNode.branches) do
+		updatePaths(info, format("%s%s%s",path,sep,branch))
 	end
 end
 
@@ -304,7 +323,7 @@ end
 
 local commandParsers = {
 	-- this RECEIVES the data
-	['sendNodeData'] = function(sentNode, sender, target)
+	['sendNodeData'] = function(prefix, sentNode, sender, target)
 		normalizeTimes(sentNode, sender)
 		-- if we don't know about the node, then create a table to hold teh
 		-- data
@@ -315,7 +334,7 @@ local commandParsers = {
 		lNode.treeSync = checkSync(lNode)
 	end,
 	-- this SENDS the data
-	['requestNodeData'] = function(path, sender)
+	['requestNodeData'] = function(prefix, path, sender)
 		local lNode = getLocalNode(path)
 		if lNode and synched[path] then
 			local lNodeSend = generateSendTable(lNode)
@@ -325,7 +344,7 @@ local commandParsers = {
 		end
 	end,
 	-- this SENDS a comparison table
-	['requestTreeSync'] = function(path, sender)
+	['requestTreeSync'] = function(prefix, path, sender)
 		local lNode = getLocalNode(path)
 		if lNode and synched[path] then
 			local lNodeSend = generateComparisonTable(lNode)
@@ -335,13 +354,13 @@ local commandParsers = {
 		end
 	end,
 	-- this RECEIVES a comparison table
-	['sendNodeSync'] = function(rNode, sender, target)
+	['sendNodeSync'] = function(prefix, rNode, sender, target)
 		if target and target ~= thisPlayer then
 			targetCommands[rNode.path] = nil
 			-- clear que for the target
 			return
 		end
-		normalizeTimes(rNode, sender)
+		normalizeTimes(prefix, rNode, sender)
 		local lNode = getLocalNode(rNode.path)
 		if not lNode then
 			requestNodeData(rNode.path)
@@ -350,14 +369,14 @@ local commandParsers = {
 		processTree(lNode, rNode)
 	end,
 	-- this RECEIVES a time broadcast (on initial login)
-	['timeLogin'] = function(time, sender)
+	['timeLogin'] = function(prefix, time, sender)
 		timeOffsets[sender] = GetTime() - time
 		local data = serializer:Serialize("timeResponse", GetTime(), sender)
 		AceComm:SendCommMessage(myprefix, data, "GUILD", "ALERT")
 		log("Sent response to a timeLogin: %s", data)
 	end,
 	-- this RECEIVES a time broadcast (in reply to login)
-	['timeResponse'] = function(time, sender)
+	['timeResponse'] = function(prefix, time, sender)
 		timeOffsets[sender] = GetTime() - time
 	end,
 }
@@ -369,9 +388,21 @@ local function processMessage(prefix, message, distribution, sender)
 		log(format("Command: %s\n\tParam: %s", command, tostring(data)))
 		local func = commandParsers[command]
 		if func and type(func) == "function" then
-			func(data, sender, target)
+			func(prefix, data, sender, target)
 		end
 	end
+end
+
+function treeSync:NewNode(prefix, name, path)
+	local _now = GetTime()
+	local t = {
+		treeModTime = _now,
+		nodeModTime = _now,
+		name = name,
+		path = (path or prefix) .. sep .. name,
+		branches = {},
+	}
+	return t
 end
 
 function treeSync:RegisterTable(prefix, root)
