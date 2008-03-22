@@ -22,15 +22,15 @@ local _gsubPatterns = {
 	}
 }
 
-if (not GuildBook) then GuildBook = {} end
-function GuildBook.toHTML(text)
+if (not KnowItAll) then KnowItAll = {} end
+function KnowItAll.toHTML(text)
 	if (not text) then return nil end
 	for key,tbl in pairs(_gsubPatterns.toHTML) do
 		text = string.gsub(text,tbl.pattern,tbl.result)
 	end
 	return text
 end
-function GuildBook.fromHTML(text)
+function KnowItAll.fromHTML(text)
 	if (not text) then return nil end
 	for key,tbl in pairs(_gsubPatterns.fromHTML) do
 		text = string.gsub(text,tbl.pattern,tbl.result)

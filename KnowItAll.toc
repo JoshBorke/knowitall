@@ -3,15 +3,15 @@
 ## Version: 0.1-20003
 ## Notes: A mod to keep a knowledgebase of information
 ## LoadOnDemand: 0
-## SavedVariablesPerCharacter: KnowItAllDB
-## SavedVariables: KnowItAll
+## SavedVariablesPerCharacter: KnowItAllKnowledge
+## SavedVariables: KnowItAllDB
 ## Author: JoshBorke
 ## X-WoWIPortal: JoshBorke
 
-sync.lua
+embeds.xml
 localisation.en.lua
 localisation.de.lua
 parser.lua
 gui.lua
-GuildBook.lua
+KnowItAll.lua
 gui.xml

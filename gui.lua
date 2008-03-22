@@ -1,5 +1,5 @@
 
-if (not GuildBook) then GuildBook = {} end
+if (not KnowItAll) then KnowItAll = {} end
 
 local _hooked = false
 local _currentPath = nil
@@ -21,11 +21,11 @@ StaticPopupDialogs["GUILDBOOKCONFIRM"] = {
 	timeout = 0,
 	whileDead = 1,
 	OnAccept = function()
-		GuildBook.RemData(_currentNode)
+		KnowItAll.RemData(_currentNode)
 		-- change to the previous location
 		_currentPath = table.remove(_backPath)
-		_currentNode = GuildBook.TraverseTreePath(_currentPath)
-		GuildBook.UpdateHTMLFrame()
+		_currentNode = KnowItAll.TraverseTreePath(_currentPath)
+		KnowItAll.UpdateHTMLFrame()
 	end
 }
 
@@ -43,16 +43,16 @@ do
 		if (_showTooltip) then
 			if (_elapsed > _timeToShow and _state == 1) then
 				GameTooltip_SetDefaultAnchor(GameTooltip,UIParent)
-				GameTooltip:AddLine(GuildBook.Buttons[_showTooltip][1])
-				GameTooltip:AddLine(GuildBook.Buttons[_showTooltip][2],.85,.85,.85,1)
+				GameTooltip:AddLine(KnowItAll.Buttons[_showTooltip][1])
+				GameTooltip:AddLine(KnowItAll.Buttons[_showTooltip][2],.85,.85,.85,1)
 				GameTooltip:Show()
 				_state = 2
 				_elapsed = 0
 			end
 			if (_elapsed < _timeOut and _state == 2) then
 				GameTooltip_SetDefaultAnchor(GameTooltip,UIParent)
-				GameTooltip:AddLine(GuildBook.Buttons[_showTooltip][1])
-				GameTooltip:AddLine(GuildBook.Buttons[_showTooltip][2],.85,.85,.85,1)
+				GameTooltip:AddLine(KnowItAll.Buttons[_showTooltip][1])
+				GameTooltip:AddLine(KnowItAll.Buttons[_showTooltip][2],.85,.85,.85,1)
 				GameTooltip:Show()
 				_state = 2
 				_elapsed = 0
@@ -67,16 +67,16 @@ do
 	_f = CreateFrame('Frame')
 	_f:SetScript("OnUpdate",_showTooltips)
 
-	function GuildBook.HideTooltip()
+	function KnowItAll.HideTooltip()
 		_elapsed = 0
 		_showTooltip = nil
 		_state = 2
 		GameTooltip:Hide()
 	end
 
-	function GuildBook.Tooltip()
+	function KnowItAll.Tooltip()
 		local which = this:GetName()
-		if (GuildBook.Buttons and GuildBook.Buttons[which]) then
+		if (KnowItAll.Buttons and KnowItAll.Buttons[which]) then
 			_showTooltip = which
 			if (_state ~= 2) then _state = 1 end
 			_elapsed = 0
@@ -86,42 +86,42 @@ do
 end
 
 -- Titlebar button clicks
-function GuildBook.OnClick()
+function KnowItAll.OnClick()
 
 	local which = this:GetName()
 
-	if which=="GuildBookNew" then
-		GuildBook.EditNode()
-	elseif which=="GuildBookDelete" then
+	if which=="KnowItAllNew" then
+		KnowItAll.EditNode()
+	elseif which=="KnowItAllDelete" then
 		if not IsShiftKeyDown() then
 			StaticPopup_Show("GUILDBOOKCONFIRM")
 		else
-			GuildBook.RemData(_currentNode) -- delete empty pages without confirmation
+			KnowItAll.RemData(_currentNode) -- delete empty pages without confirmation
 			-- change to the previous location
 			_currentPath = table.remove(_backPath)
-			_currentNode = GuildBook.TraverseTreePath(_currentPath)
+			_currentNode = KnowItAll.TraverseTreePath(_currentPath)
 		end
-		GuildBook.UpdateHTMLFrame()
-	elseif which == "GuildBookEdit" then
-		GuildBook.EditNode(_currentNode)
-	elseif which == 'GuildBookEditClose' then
-		GuildBookFrameEditFrame:Hide()
-	elseif which == 'GuildBookUndo' then
-		GuildBook.EditNode(_currentNode)
-	elseif which == 'GuildBookSave' then
+		KnowItAll.UpdateHTMLFrame()
+	elseif which == "KnowItAllEdit" then
+		KnowItAll.EditNode(_currentNode)
+	elseif which == 'KnowItAllEditClose' then
+		KnowItAllFrameEditFrame:Hide()
+	elseif which == 'KnowItAllUndo' then
+		KnowItAll.EditNode(_currentNode)
+	elseif which == 'KnowItAllSave' then
 		local text
-		text = GuildBook.toHTML(GuildBookEditBox:GetText())
-		if (not GuildBookEditBox.name) then -- we added a new node
-			GuildBook.AddData(GuildBookFrameNameBox:GetText(),GuildBookFrameTaglineBox:GetText(),text,_currentNode)
+		text = KnowItAll.toHTML(KnowItAllEditBox:GetText())
+		if (not KnowItAllEditBox.name) then -- we added a new node
+			KnowItAll.AddData(KnowItAllFrameNameBox:GetText(),KnowItAllFrameTaglineBox:GetText(),text,_currentNode)
 			table.insert(_backPath,_currentPath)
-			_currentPath = _currentPath..'>'..GuildBookFrameNameBox:GetText()
-		elseif (GuildBook.ValidateContent(text)) then
-			if (GuildBookEditBox.name ~= GuildBookFrameNameBox:GetText()) then
-				GuildBook.ModifyData(_currentNode,GuildBookFrameNameBox:GetText(),GuildBookFrameTaglineBox:GetText(),text,UnitName('player'),time())
-				_currentPath = string.gsub(_currentPath,'(.+>)'..GuildBookEditBox.name,'%1'..GuildBookFrameNameBox:GetText())
-				_currentNode = GuildBook.TraverseTreePath(_currentPath)
+			_currentPath = _currentPath..'>'..KnowItAllFrameNameBox:GetText()
+		elseif (KnowItAll.ValidateContent(text)) then
+			if (KnowItAllEditBox.name ~= KnowItAllFrameNameBox:GetText()) then
+				KnowItAll.ModifyData(_currentNode,KnowItAllFrameNameBox:GetText(),KnowItAllFrameTaglineBox:GetText(),text,UnitName('player'),time())
+				_currentPath = string.gsub(_currentPath,'(.+>)'..KnowItAllEditBox.name,'%1'..KnowItAllFrameNameBox:GetText())
+				_currentNode = KnowItAll.TraverseTreePath(_currentPath)
 			else
-				GuildBook.ModifyData(_currentNode,nil,GuildBookFrameTaglineBox:GetText(),text,UnitName('player'),time())
+				KnowItAll.ModifyData(_currentNode,nil,KnowItAllFrameTaglineBox:GetText(),text,UnitName('player'),time())
 			end
 		end
 		if (_resetForward) then
@@ -131,153 +131,153 @@ function GuildBook.OnClick()
 			--table.setn(_forwardPath,0)
 			_resetForward = false
 		end
-		GuildBookFrameEditFrame:Hide()
-		GuildBook.UpdateHTMLFrame()
-	elseif which=="GuildBookClose" then
-		GuildBookFrame:Hide()
-	elseif which=="GuildBookFramePin" then
-		GuildBookFrame.lock = not GuildBookFrame.lock
-		GuildBook.UpdateLock()
-	elseif which=="GuildBookFont" then
-		GuildBookOptions['frame'].Font = GuildBookSettings.Font+1
-		GuildBook.UpdateFont()
-	elseif which=='GuildBookBackButton' then
+		KnowItAllFrameEditFrame:Hide()
+		KnowItAll.UpdateHTMLFrame()
+	elseif which=="KnowItAllClose" then
+		KnowItAllFrame:Hide()
+	elseif which=="KnowItAllFramePin" then
+		KnowItAllFrame.lock = not KnowItAllFrame.lock
+		KnowItAll.UpdateLock()
+	elseif which=="KnowItAllFont" then
+		KnowItAllOptions['frame'].Font = KnowItAllSettings.Font+1
+		KnowItAll.UpdateFont()
+	elseif which=='KnowItAllBackButton' then
 		_tmpPath = table.remove(_backPath)
-		if (GuildBook.TraverseTreePath(_tmpPath)) then
+		if (KnowItAll.TraverseTreePath(_tmpPath)) then
 			table.insert(_forwardPath,_currentPath)
 			_currentPath = _tmpPath
-			GuildBook.UpdateHTMLFrame()
+			KnowItAll.UpdateHTMLFrame()
 		end
-	elseif which == "GuildBookUpButton" then
+	elseif which == "KnowItAllUpButton" then
 		table.insert(_backPath,_currentPath)
 		_,_,_currentPath = string.find(_currentPath,'^(.+)>.-$')
-		GuildBook.UpdateHTMLFrame()
-	elseif which=='GuildBookForwardButton' then
+		KnowItAll.UpdateHTMLFrame()
+	elseif which=='KnowItAllForwardButton' then
 		_tmpPath = table.remove(_forwardPath)
-		if (GuildBook.TraverseTreePath(_tmpPath)) then
+		if (KnowItAll.TraverseTreePath(_tmpPath)) then
 			table.insert(_backPath,_currentPath)
 			_currentPath = _tmpPath
-			GuildBook.UpdateHTMLFrame()
+			KnowItAll.UpdateHTMLFrame()
 		end
 	end
 end
 
-function GuildBook.EditNode(node)
+function KnowItAll.EditNode(node)
 	local content = node and node.data.content
 	local name = node and node.data.name
 	local tagline = node and node.data.tagline
-	GuildBookEditBox.content = content
-	GuildBookEditBox.name = name
-	GuildBookEditBox.tagline = tagline
+	KnowItAllEditBox.content = content
+	KnowItAllEditBox.name = name
+	KnowItAllEditBox.tagline = tagline
 	if (not node) then
 		node = _defaultNode
 		_resetForward = true
 	end
-	GuildBookEditBox:SetText(GuildBook.fromHTML(content) or '<H1>Set Content</H1>')
-	GuildBookFrameNameBox:SetText(name or L['Set Name'])
-	GuildBookFrameTaglineBox:SetText(tagline or L['Set Tagline'])
-	GuildBookUndo:Disable()
-	SetDesaturation(GuildBookUndo:GetNormalTexture(),true)
-	GuildBookUndo:SetAlpha(0.5)
-	GuildBookFrameEditFrame:Show()
-	GuildBook.HookItemClicks()
-	GuildBookEditBox:SetWidth(GuildBookFrameEditFrame:GetWidth()-50)
-	GuildBookFrameTaglineBoxFrame:SetWidth(GuildBookFrameEditFrame:GetWidth()-185)
-	GuildBookFrameTaglineBox:SetWidth(GuildBookFrameEditFrame:GetWidth()-195)
+	KnowItAllEditBox:SetText(KnowItAll.fromHTML(content) or '<H1>Set Content</H1>')
+	KnowItAllFrameNameBox:SetText(name or L['Set Name'])
+	KnowItAllFrameTaglineBox:SetText(tagline or L['Set Tagline'])
+	KnowItAllUndo:Disable()
+	SetDesaturation(KnowItAllUndo:GetNormalTexture(),true)
+	KnowItAllUndo:SetAlpha(0.5)
+	KnowItAllFrameEditFrame:Show()
+	KnowItAll.HookItemClicks()
+	KnowItAllEditBox:SetWidth(KnowItAllFrameEditFrame:GetWidth()-50)
+	KnowItAllFrameTaglineBoxFrame:SetWidth(KnowItAllFrameEditFrame:GetWidth()-185)
+	KnowItAllFrameTaglineBox:SetWidth(KnowItAllFrameEditFrame:GetWidth()-195)
 end
 
-function GuildBook.OnShow()
-	if (GuildBook.canEdit) then
-		GuildBookNew:Show()
-		GuildBookDelete:Show()
+function KnowItAll.OnShow()
+	if (KnowItAll.canEdit) then
+		KnowItAllNew:Show()
+		KnowItAllDelete:Show()
 	else
-		GuildBookNew:Hide()
-		GuildBookDelete:Hide()
+		KnowItAllNew:Hide()
+		KnowItAllDelete:Hide()
 	end
-	GuildBookHTMLContent:SetWidth(GuildBookFrame:GetWidth()-50)
-	GuildBook.UpdateHTMLFrame()
+	KnowItAllHTMLContent:SetWidth(KnowItAllFrame:GetWidth()-50)
+	KnowItAll.UpdateHTMLFrame()
 end
 
-function GuildBook.UpdateHTMLFrame()
-	_currentNode = GuildBook.TraverseTreePath(_currentPath)
+function KnowItAll.UpdateHTMLFrame()
+	_currentNode = KnowItAll.TraverseTreePath(_currentPath)
 	if (not _currentNode) then
-		GuildBook.Error('UpdateHTMLFrame','Couldn\'t find the current node, going back one')
+		KnowItAll.Error('UpdateHTMLFrame','Couldn\'t find the current node, going back one')
 		_tmpPath = table.remove(_backPath)
 		if (not _tmpPath) then
-			GuildBook.ResetRoot()
+			KnowItAll.ResetRoot()
 			return
 		end
-		if (GuildBook.TraverseTreePath(_tmpPath)) then
+		if (KnowItAll.TraverseTreePath(_tmpPath)) then
 			_currentPath = _tmpPath
-			GuildBook.UpdateHTMLFrame()
+			KnowItAll.UpdateHTMLFrame()
 		end
 		return
 	end
-	if (not _currentPath) then _currentPath = GuildBook.GetTreePath(_currentNode) end
-	local text = GuildBook.GetContent(_currentNode)
-	GuildBookKB.currentPath = _currentPath
-	GuildBookHTMLContent:SetText(text)
-	GuildBookFramePath:SetText(_currentPath)
+	if (not _currentPath) then _currentPath = KnowItAll.GetTreePath(_currentNode) end
+	local text = KnowItAll.GetContent(_currentNode)
+	KnowItAllKB.currentPath = _currentPath
+	KnowItAllHTMLContent:SetText(text)
+	KnowItAllFramePath:SetText(_currentPath)
 	if (table.getn(_backPath) > 0) then
-		if (not GuildBookBackButton.isEnabled) then
-			GuildBookBackButton:Enable()
-			SetDesaturation(GuildBookBackButton:GetNormalTexture(),false)
-			GuildBookBackButton:SetAlpha(1)
-			GuildBookBackButton.isEnabled = true
+		if (not KnowItAllBackButton.isEnabled) then
+			KnowItAllBackButton:Enable()
+			SetDesaturation(KnowItAllBackButton:GetNormalTexture(),false)
+			KnowItAllBackButton:SetAlpha(1)
+			KnowItAllBackButton.isEnabled = true
 		end
 	else
-		GuildBookBackButton:Disable()
-		SetDesaturation(GuildBookBackButton:GetNormalTexture(),true)
-		GuildBookBackButton:SetAlpha(.5)
-		GuildBookBackButton.isEnabled = false
+		KnowItAllBackButton:Disable()
+		SetDesaturation(KnowItAllBackButton:GetNormalTexture(),true)
+		KnowItAllBackButton:SetAlpha(.5)
+		KnowItAllBackButton.isEnabled = false
 	end
 	if (table.getn(_forwardPath) > 0) then
-		if (not GuildBookForwardButton.isEnabled) then
-			GuildBookForwardButton:Enable()
-			SetDesaturation(GuildBookForwardButton:GetNormalTexture(),false)
-			GuildBookForwardButton:SetAlpha(1)
-			GuildBookForwardButton.isEnabled = true
+		if (not KnowItAllForwardButton.isEnabled) then
+			KnowItAllForwardButton:Enable()
+			SetDesaturation(KnowItAllForwardButton:GetNormalTexture(),false)
+			KnowItAllForwardButton:SetAlpha(1)
+			KnowItAllForwardButton.isEnabled = true
 		end
 	else
-		GuildBookForwardButton:Disable()
-		SetDesaturation(GuildBookForwardButton:GetNormalTexture(),true)
-		GuildBookForwardButton:SetAlpha(.5)
-		GuildBookForwardButton.isEnabled = false
+		KnowItAllForwardButton:Disable()
+		SetDesaturation(KnowItAllForwardButton:GetNormalTexture(),true)
+		KnowItAllForwardButton:SetAlpha(.5)
+		KnowItAllForwardButton.isEnabled = false
 	end
-	if (_currentPath ~= "GuildBookKB") then
-		if (not GuildBookUpButton.isEnabled) then
-			GuildBookUpButton:Enable()
-			SetDesaturation(GuildBookUpButton:GetNormalTexture(),false)
-			GuildBookUpButton:SetAlpha(1)
-			GuildBookUpButton.isEnabled = true
+	if (_currentPath ~= "KnowItAllKB") then
+		if (not KnowItAllUpButton.isEnabled) then
+			KnowItAllUpButton:Enable()
+			SetDesaturation(KnowItAllUpButton:GetNormalTexture(),false)
+			KnowItAllUpButton:SetAlpha(1)
+			KnowItAllUpButton.isEnabled = true
 		end
 	else
-		if (GuildBookUpButton.isEnabled) then
-			GuildBookUpButton:Disable()
-			GuildBookUpButton.isEnabled = false
-			SetDesaturation(GuildBookUpButton:GetNormalTexture(),true)
-			GuildBookUpButton:SetAlpha(.5)
+		if (KnowItAllUpButton.isEnabled) then
+			KnowItAllUpButton:Disable()
+			KnowItAllUpButton.isEnabled = false
+			SetDesaturation(KnowItAllUpButton:GetNormalTexture(),true)
+			KnowItAllUpButton:SetAlpha(.5)
 		end
 	end
 
-	GuildBookHTMLContent:GetParent():UpdateScrollChildRect()
-	local scrollBar = getglobal(GuildBookHTMLContent:GetParent():GetName().."ScrollBar")
+	KnowItAllHTMLContent:GetParent():UpdateScrollChildRect()
+	local scrollBar = getglobal(KnowItAllHTMLContent:GetParent():GetName().."ScrollBar")
 	local min, max = scrollBar:GetMinMaxValues()
 	if ( max > 0 and (this.max ~= max) ) then
 		this.max = max
 		scrollBar:SetValue(max)
 	end
-	if (not GuildBook.NameCanDelete(GuildBook.playerName,_currentNode)) then GuildBookDelete:Hide() else GuildBookDelete:Show() end
-	if (not GuildBook.NameCanEdit(GuildBook.playerName,_currentNode)) then
-		GuildBookNew:Hide()
-		GuildBookEdit:Hide()
+	if (not KnowItAll.NameCanDelete(KnowItAll.playerName,_currentNode)) then KnowItAllDelete:Hide() else KnowItAllDelete:Show() end
+	if (not KnowItAll.NameCanEdit(KnowItAll.playerName,_currentNode)) then
+		KnowItAllNew:Hide()
+		KnowItAllEdit:Hide()
 	else
-		GuildBookEdit:Show()
-		GuildBookNew:Show()
+		KnowItAllEdit:Show()
+		KnowItAllNew:Show()
 	end
 end
 
-function GuildBook.HyperLinkClicked(linkID,button)
+function KnowItAll.HyperLinkClicked(linkID,button)
     if (string.match(linkID,"item:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+:%-?%d+")) then
 		local name,link = GetItemInfo(linkID)
 		if ( IsControlKeyDown() ) then
@@ -295,7 +295,7 @@ function GuildBook.HyperLinkClicked(linkID,button)
 		end
 	else
 		table.insert(_backPath,_currentPath)
-		if (not string.find(linkID,'^GuildBookKB>')) then
+		if (not string.find(linkID,'^KnowItAllKB>')) then
 			_currentPath = _currentPath..'>'..linkID
 		else
 			_currentPath = linkID
@@ -305,24 +305,24 @@ function GuildBook.HyperLinkClicked(linkID,button)
 			_forwardPath[k] = nil
 		end
 		--table.setn(_forwardPath,0)
-		GuildBook.UpdateHTMLFrame()
+		KnowItAll.UpdateHTMLFrame()
 	end
 end
 
 -- changes border and resize grip depending on lock status
-function GuildBook.UpdateLock()
-	if GuildBookFrame.lock then
-		GuildBookFramePin:SetNormalTexture("Interface/Addons/GuildBook/buttons/pinned.tga")
-		GuildBookFrame:SetBackdropBorderColor(0,0,0,1)
-		GuildBookFrameResizeGrip:Hide()
+function KnowItAll.UpdateLock()
+	if KnowItAllFrame.lock then
+		KnowItAllFramePin:SetNormalTexture("Interface/Addons/KnowItAll/buttons/pinned.tga")
+		KnowItAllFrame:SetBackdropBorderColor(0,0,0,1)
+		KnowItAllFrameResizeGrip:Hide()
 	else
-		GuildBookFramePin:SetNormalTexture("Interface/Addons/GuildBook/buttons/pin.tga")
-		GuildBookFrame:SetBackdropBorderColor(1,1,1,1)
-		GuildBookFrameResizeGrip:Show()
+		KnowItAllFramePin:SetNormalTexture("Interface/Addons/KnowItAll/buttons/pin.tga")
+		KnowItAllFrame:SetBackdropBorderColor(1,1,1,1)
+		KnowItAllFrameResizeGrip:Show()
 	end
 end
 
-function GuildBook.OnTextChanged()
+function KnowItAll.OnTextChanged()
 	if (this:GetName() == "GulidBookEditBox") then
 		local scrollBar = getglobal(this:GetParent():GetName().."ScrollBar")
 		this:GetParent():UpdateScrollChildRect()
@@ -332,51 +332,51 @@ function GuildBook.OnTextChanged()
 			scrollBar:SetValue(max)
 		end
 	end
-	 if (GuildBookEditBox:GetText() ~= GuildBookEditBox.content or
-		 GuildBookFrameNameBox:GetText() ~= GuildBookEditBox.name or
-		 GuildBookFrameTaglineBox:GetText() ~= GuildBookEditBox.tagline) then
-		SetDesaturation(GuildBookUndo:GetNormalTexture(),false)
-		GuildBookUndo:Enable()
-		GuildBookUndo:SetAlpha(1)
+	 if (KnowItAllEditBox:GetText() ~= KnowItAllEditBox.content or
+		 KnowItAllFrameNameBox:GetText() ~= KnowItAllEditBox.name or
+		 KnowItAllFrameTaglineBox:GetText() ~= KnowItAllEditBox.tagline) then
+		SetDesaturation(KnowItAllUndo:GetNormalTexture(),false)
+		KnowItAllUndo:Enable()
+		KnowItAllUndo:SetAlpha(1)
 	 else
-		GuildBookUndo:Disable()
-		SetDesaturation(GuildBookUndo:GetNormalTexture(),true)
-		GuildBookUndo:SetAlpha(0.5)
+		KnowItAllUndo:Disable()
+		SetDesaturation(KnowItAllUndo:GetNormalTexture(),true)
+		KnowItAllUndo:SetAlpha(0.5)
 	 end
 end
 
-function GuildBook.ResetRoot()
-	_currentNode = GuildBookKB
-	_currentPath = GuildBook.GetTreePath(_currentNode)
+function KnowItAll.ResetRoot()
+	_currentNode = KnowItAllKB
+	_currentPath = KnowItAll.GetTreePath(_currentNode)
 	_backPath = {}
 	_forwardPath = {}
-	GuildBook.UpdateHTMLFrame()
+	KnowItAll.UpdateHTMLFrame()
 end
 
-function GuildBook.RestoreCurrentPath(path)
+function KnowItAll.RestoreCurrentPath(path)
 	_currentPath = path
-	GuildBook.UpdateHTMLFrame()
+	KnowItAll.UpdateHTMLFrame()
 end
 
 local function myClickAction(link,text,button)
-	if (GuildBookEditBox:IsShown()) then
+	if (KnowItAllEditBox:IsShown()) then
 		if (IsShiftKeyDown()) then
 			if (not link) then return end
 			local name,link = GetItemInfo(link)
-			GuildBookEditBox:Insert(link)
+			KnowItAllEditBox:Insert(link)
 		end
 	end
 end
 
 local function myClickAction2(text)
-	if (GuildBookEditBox:IsShown() and not ChatFrameEditBox:IsVisible()) then
+	if (KnowItAllEditBox:IsShown() and not ChatFrameEditBox:IsVisible()) then
 		if (not text) then return end
 		local name,link = GetItemInfo(text)
-		GuildBookEditBox:Insert(link)
+		KnowItAllEditBox:Insert(link)
 	end
 end
 
-function GuildBook.HookItemClicks()
+function KnowItAll.HookItemClicks()
 	if (not _hooked) then
 		hooksecurefunc('SetItemRef',myClickAction)
 		hooksecurefunc('ChatEdit_InsertLink',myClickAction2)
