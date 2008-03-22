@@ -1,0 +1,17 @@
+## Interface: 20003
+## Title: KnowItAll
+## Version: 0.1-20003
+## Notes: A mod to keep a knowledgebase of information
+## LoadOnDemand: 0
+## SavedVariablesPerCharacter: KnowItAllDB
+## SavedVariables: KnowItAll
+## Author: JoshBorke
+## X-WoWIPortal: JoshBorke
+
+sync.lua
+localisation.en.lua
+localisation.de.lua
+parser.lua
+gui.lua
+GuildBook.lua
+gui.xml
